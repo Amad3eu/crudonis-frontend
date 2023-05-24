@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Typography, Box, Container, TextField, Button } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Container,
+  TextField,
+  Button,
+  Rating,
+} from "@mui/material";
 import { Upload } from "@mui/icons-material";
 
 type Comment = {
@@ -10,6 +17,7 @@ type Comment = {
   moment_id: number;
   created_at: string;
   updated_at: string;
+  rate: number;
 };
 
 type Moment = {
@@ -40,6 +48,7 @@ const App = () => {
     moment_id: 0,
     created_at: "",
     updated_at: "",
+    rate: 0,
   });
 
   useEffect(() => {
@@ -122,7 +131,7 @@ const App = () => {
         comments: [],
       });
 
-      // Buscar novamente os momentos atualizados após adicionar/atualizar
+      // Fetch the updated moments after adding/updating
       fetchMoments();
     } catch (error) {
       console.error(error);
@@ -166,12 +175,32 @@ const App = () => {
         moment_id: 0,
         created_at: "",
         updated_at: "",
+        rate: 0,
       });
 
-      // Buscar novamente os momentos atualizados após adicionar o comentário
+      // Fetch the updated moments after adding the comment
       fetchMoments();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const getRateLabel = (rate: number) => {
+    switch (rate) {
+      case 0:
+        return "Péssimo";
+      case 1:
+        return "Não é bom";
+      case 2:
+        return "Ruim";
+      case 3:
+        return "Bom";
+      case 4:
+        return "Muito bom";
+      case 5:
+        return "Excelente";
+      default:
+        return "";
     }
   };
 
@@ -190,7 +219,7 @@ const App = () => {
         <form onSubmit={handleSubmit} style={{ marginTop: "2rem" }}>
           <TextField
             name="title"
-            label="Title of the Moment"
+            label="Titulo do Moment"
             variant="outlined"
             margin="normal"
             fullWidth
@@ -199,7 +228,7 @@ const App = () => {
           />
           <TextField
             name="description"
-            label="Description of the Moment"
+            label="Descrição do Moment"
             variant="outlined"
             margin="normal"
             fullWidth
@@ -231,7 +260,7 @@ const App = () => {
           <Button
             type="submit"
             variant="contained"
-            color="primary"
+            color="success"
             style={{ marginTop: "1rem" }}
           >
             {newMoment.id === 0 ? "Adicionar Moment" : "Atualizar Moment"}
@@ -261,12 +290,15 @@ const App = () => {
                   </span>
                   {comment.text}
                 </Typography>
+                <Typography variant="body2" component="p">
+                  Avaliação: {getRateLabel(comment.rate)}
+                </Typography>
               </Box>
             ))}
             <form onSubmit={(event) => handleCommentSubmit(event, moment.id)}>
               <TextField
                 name="username"
-                label="Username"
+                label="Usuário"
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -275,7 +307,7 @@ const App = () => {
               />
               <TextField
                 name="text"
-                label="Comment"
+                label="Comentário"
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -284,14 +316,30 @@ const App = () => {
                 value={newComment.text}
                 onChange={handleCommentChange}
               />
-              <Button type="submit" variant="contained" color="primary">
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="body1" component="h4" gutterBottom>
+                  Avaliação:
+                </Typography>
+                <Rating
+                  name="rate"
+                  value={newComment.rate}
+                  onChange={(_, value) => {
+                    setNewComment((prevComment) => ({
+                      ...prevComment,
+                      rate: value || 0,
+                    }));
+                  }}
+                  style={{ marginLeft: "1rem" }}
+                />
+              </Box>
+              <Button type="submit" variant="contained" color="success">
                 Adicionar Comentário
               </Button>
             </form>
             <Box display="flex" justifyContent="end" mt={2}>
               <Button
                 sx={{ mr: 2 }}
-                color="info"
+                color="warning"
                 variant="contained"
                 onClick={() => handleEdit(moment)}
               >
